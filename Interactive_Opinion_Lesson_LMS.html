@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Interactive Video - Asking for and Giving Opinion</title>
+<style>
+:root{--blue:#123f73;--blue2:#0b63b6;--yellow:#f4c542;--green:#28a745;--red:#dc3545;--bg:#eef4fa;--card:#fff;--text:#18324a}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,#0d3158,#1467ad);color:white;padding:18px 22px;position:sticky;top:0;z-index:5;box-shadow:0 3px 12px #0002}
+.header-row{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px}
+h1{font-size:clamp(20px,3vw,32px);margin:0}.badge{background:#ffffff22;border:1px solid #ffffff55;padding:8px 12px;border-radius:20px;font-weight:bold;font-size:13px}
+.wrap{max-width:1100px;margin:24px auto;padding:0 16px}.panel{background:var(--card);border-radius:18px;padding:24px;box-shadow:0 8px 25px #173a5b14;margin-bottom:18px}
+.hidden{display:none!important}.center{text-align:center}
+.progress{height:10px;background:#dbe7f2;border-radius:20px;overflow:hidden;margin:15px 0}.bar{height:100%;width:0;background:var(--yellow);transition:.35s}
+.scene{min-height:390px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:linear-gradient(135deg,#f8fbff,#e4f0fb);border:2px solid #d3e2f1}
+.scene .icon{font-size:72px;margin-bottom:12px}.scene h2{font-size:34px;margin:8px 0;color:var(--blue)}.scene p{font-size:19px;max-width:760px;line-height:1.55}
+.dialogue{display:grid;gap:10px;max-width:760px;width:100%;margin:15px auto}.bubble{padding:14px 18px;border-radius:18px;text-align:left;background:#fff;border:1px solid #d9e5ef}.bubble strong{color:var(--blue)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:18px}.mini{padding:18px;border-radius:15px;background:#f5f9fd;border:1px solid #d8e5f0}.mini b{display:block;font-size:18px;margin-bottom:7px}
+.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:bold;cursor:pointer;margin:5px;background:var(--blue2);color:white}.btn:hover{filter:brightness(.93)}.btn.secondary{background:#6c7a89}.btn.green{background:var(--green)}.btn.yellow{background:#e4a900;color:#172b3c}.btn.red{background:var(--red)}
+.question{border-left:7px solid var(--yellow)}.options{display:grid;gap:10px;margin:18px 0}.option{padding:14px 16px;border:2px solid #d7e2ec;border-radius:12px;background:white;text-align:left;cursor:pointer;font-size:16px}.option:hover{border-color:#4b8dcc;background:#f5faff}.option.correct{border-color:var(--green);background:#eaf8ee}.option.wrong{border-color:var(--red);background:#fff0f0}.feedback{padding:15px;border-radius:12px;font-weight:bold;margin:12px 0}.feedback.ok{background:#e9f8ee;color:#176b31}.feedback.no{background:#fff0f0;color:#9b1c27}
+textarea{width:100%;min-height:170px;border:2px solid #d4e0ea;border-radius:12px;padding:14px;font-size:16px;resize:vertical}.wordcount{font-weight:bold;margin-top:7px}
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.score-box{padding:18px;background:#f4f8fc;border-radius:14px;text-align:center}.score-box strong{display:block;font-size:30px;color:var(--blue)}
+@media(max-width:650px){.header-row{align-items:flex-start;flex-direction:column}.score-grid{grid-template-columns:repeat(2,1fr)}.scene{min-height:330px}.scene h2{font-size:27px}}
+</style>
+</head>
+<body>
+<header><div class="header-row"><h1>🎬 Asking for and Giving Opinion</h1><div><span class="badge">B1 Intermediate</span> <span class="badge">10 Questions</span></div></div></header>
+
+<div class="wrap">
+<div class="panel">
+  <div><b id="stageText">Lesson 1 of 13</b><span style="float:right"><b id="scoreTop">Score: 0/100</b></span></div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+</div>
+
+<div id="lesson" class="panel scene">
+  <div class="icon" id="icon">💬</div>
+  <h2 id="title">ASKING FOR AND GIVING OPINION</h2>
+  <p id="body">Express your ideas. Respect other people's ideas.</p>
+  <div id="extra"></div>
+  <button class="btn green" id="mainBtn" onclick="nextStage()">▶ START LESSON</button>
+</div>
+
+<div id="questionPanel" class="panel question hidden">
+  <h2 id="qTitle">Question</h2><p id="qText"></p><div id="options" class="options"></div>
+  <div id="feedback"></div><button id="continueBtn" class="btn green hidden" onclick="nextStage()">▶ CONTINUE</button>
+</div>
+
+<div id="speakingPanel" class="panel hidden">
+  <h2>🎙️ Speaking Challenge</h2>
+  <p><b>What do you think about practical training for vocational students?</b></p>
+  <p>Speak for 30–60 seconds. Your recording stays in this browser until you save or download it.</p>
+  <button class="btn" id="recordBtn" onclick="toggleRecording()">🎙️ START RECORDING</button>
+  <button class="btn secondary" id="stopBtn" onclick="stopRecording()" disabled>⏹ STOP</button>
+  <div id="recStatus" style="margin:12px 0;font-weight:bold"></div>
+  <audio id="audio" controls class="hidden" style="width:100%"></audio>
+  <button class="btn yellow hidden" id="downloadAudio" onclick="downloadRecording()">💾 DOWNLOAD RECORDING</button>
+  <button class="btn green" onclick="nextStage()">CONTINUE TO WRITING ▶</button>
+</div>
+
+<div id="writingPanel" class="panel hidden">
+  <h2>✍️ Writing Challenge</h2>
+  <p><b>What is your opinion about using AI in education?</b></p>
+  <textarea id="writing" placeholder="In my opinion, ..."></textarea>
+  <div class="wordcount" id="wc">Word Count: 0 / 50</div>
+  <button class="btn green" onclick="finishWriting()">SAVE WRITING & SEE RESULT</button>
+</div>
+
+<div id="resultPanel" class="panel hidden center">
+  <h2>🏆 YOUR LESSON RESULT</h2>
+  <div class="score-grid">
+    <div class="score-box"><span>Interactive Quiz</span><strong id="quizScore">0</strong></div>
+    <div class="score-box"><span>Speaking</span><strong>—</strong></div>
+    <div class="score-box"><span>Writing</span><strong>—</strong></div>
+    <div class="score-box"><span>Overall*</span><strong id="overall">0</strong></div>
+  </div>
+  <p id="resultMsg" style="font-size:19px;font-weight:bold"></p>
+  <p>*Speaking and Writing are submitted for teacher assessment in the LMS.</p>
+  <button class="btn yellow" onclick="retry()">🔄 TRY AGAIN</button>
+  <button class="btn" onclick="exportCSV()">📥 DOWNLOAD CSV REPORT</button>
+</div>
+</div>
+
+<script>
+const stages=[
+{type:"scene",icon:"🎯",title:"Learning Objectives",body:"By the end of this lesson, you will be able to ask for opinions, give opinions, agree with someone, and disagree politely.",extra:`<div class="cards"><div class="mini"><b>💬 ASK</b>Ask someone's opinion.</div><div class="mini"><b>🗣️ GIVE</b>Express your opinion.</div><div class="mini"><b>👍 AGREE</b>Show agreement.</div><div class="mini"><b>🤝 DISAGREE</b>Disagree politely.</div></div>`},
+{type:"scene",icon:"💭",title:"What is an Opinion?",body:"An opinion is what someone thinks, believes, or feels about a topic.",extra:`<div class="dialogue"><div class="bubble"><strong>Dika:</strong> I think smartphones are useful for students.</div><div class="bubble"><strong>Rina:</strong> In my opinion, students should not use smartphones too much.</div></div>`},
+{type:"q",q:"What is an opinion?",opts:["A fact that can always be proven","What someone thinks or believes","An instruction","A greeting"],a:1,exp:"An opinion is what someone thinks or believes about a topic."},
+{type:"scene",icon:"❓",title:"Asking for Opinion",body:"Use these expressions when you want to know what someone thinks.",extra:`<div class="cards"><div class="mini"><b>What do you think about...?</b></div><div class="mini"><b>What do you think of...?</b></div><div class="mini"><b>What's your opinion about...?</b></div><div class="mini"><b>What's your view on...?</b></div><div class="mini"><b>How do you feel about...?</b></div></div>`},
+{type:"q",q:"“What do you think about online learning?” What is the speaker doing?",opts:["Giving advice","Asking for an opinion","Giving information","Apologizing"],a:1,exp:"The speaker is asking another person for an opinion."},
+{type:"q",q:"Which expression is used to ask for an opinion?",opts:["I completely agree.","I think it is useful.","What's your opinion about it?","From my point of view, it is good."],a:2,exp:"“What's your opinion about it?” asks another person what they think."},
+{type:"scene",icon:"🗣️",title:"Giving Opinion",body:"These expressions introduce your own ideas or beliefs.",extra:`<div class="cards"><div class="mini"><b>I think...</b></div><div class="mini"><b>I believe...</b></div><div class="mini"><b>In my opinion...</b></div><div class="mini"><b>In my view...</b></div><div class="mini"><b>From my point of view...</b></div></div>`},
+{type:"q",q:"“I think English is very important for vocational students.” What is the function?",opts:["Asking for an opinion","Giving an opinion","Agreeing","Disagreeing"],a:1,exp:"“I think...” is a common expression for giving an opinion."},
+{type:"q",q:"Teacher: “What do you think about using AI in education?” Which answer is best?",opts:["What is your name?","See you tomorrow.","In my opinion, AI can help students if it is used responsibly.","I don't understand your question."],a:2,exp:"The answer directly gives an opinion about AI in education."},
+{type:"scene",icon:"👍",title:"Agreeing",body:"When your opinion is the same as another person's, you can show agreement.",extra:`<div class="cards"><div class="mini"><b>I agree with you.</b></div><div class="mini"><b>I completely agree.</b></div><div class="mini"><b>You're right.</b></div><div class="mini"><b>That's a good point.</b></div><div class="mini"><b>I think so too.</b></div></div>`},
+{type:"q",q:"Which expression shows agreement?",opts:["I disagree with you.","I agree with you.","What do you think?","I'm not sure."],a:1,exp:"“I agree with you” clearly shows agreement."},
+{type:"scene",icon:"🤝",title:"Disagreeing Politely",body:"You can disagree without being rude. Show that you understand the other person's idea first.",extra:`<div class="dialogue"><div class="bubble"><strong>Rina:</strong> I think students should use smartphones freely at school.</div><div class="bubble"><strong>Dika:</strong> I see your point, but I think smartphones should be used responsibly.</div></div><div class="cards"><div class="mini"><b>I see your point, but...</b></div><div class="mini"><b>I understand your point, but...</b></div><div class="mini"><b>I'm not sure I agree.</b></div><div class="mini"><b>I have a different opinion.</b></div></div>`},
+{type:"q",q:"Which response shows polite disagreement?",opts:["You're completely wrong!","That's a stupid idea.","I see your point, but I think smartphones should be used responsibly.","No!"],a:2,exp:"It acknowledges the other person's point and then gives a different opinion politely."},
+{type:"scene",icon:"🏭",title:"Real Dialogue: Vocational Context",body:"Rina: What do you think about practical training?  Dika: In my opinion, practical training is very useful.  Rina: Why do you think so?  Dika: Because it gives students real experience before they enter the workplace.  Rina: I completely agree with you.",extra:""},
+{type:"q",q:"Complete the dialogue: A: “What do you think about practical training?” B: “_____”",opts:["See you tomorrow.","I don't know your name.","I think it is very useful because it gives us real experience.","Thank you for your attention."],a:2,exp:"This answer gives an opinion and provides a reason."},
+{type:"scene",icon:"🦺",title:"Vocational Situations",body:"Apply opinion expressions to real vocational situations.",extra:`<div class="cards"><div class="mini"><b>Workshop Safety</b>What do you think about wearing safety equipment?<br><br><i>In my opinion, safety equipment should always be used.</i></div><div class="mini"><b>Internship</b>What do you think about internships?<br><br><i>I believe internships help students understand the real workplace.</i></div><div class="mini"><b>Technology</b>What's your opinion about technology in class?<br><br><i>From my point of view, technology can make learning more interesting.</i></div></div>`},
+{type:"q",q:"What is your opinion about wearing safety equipment?",opts:["In my opinion, safety equipment should always be used.","What is your name?","I completely disagree.","See you later."],a:0,exp:"This is a complete opinion about safety equipment."},
+{type:"scene",icon:"🏆",title:"Final Challenge",body:"One last question before your result.",extra:""},
+{type:"q",q:"What is the function of “From my point of view...”?",opts:["Asking for an opinion","Giving an opinion","Agreeing","Disagreeing"],a:1,exp:"“From my point of view...” introduces your own opinion."},
+{type:"scene",icon:"🧠",title:"Quick Review",body:"ASK → What do you think about...?   GIVE → In my opinion...   AGREE → I agree with you.   DISAGREE → I see your point, but...",extra:""},
+{type:"speaking"},{type:"writing"},{type:"result"}
+];
+
+let stage=0, quizScore=0, answers=[], recorder, chunks=[], audioBlob=null;
+
+function render(){
+ document.getElementById("questionPanel").classList.add("hidden");
+ document.getElementById("speakingPanel").classList.add("hidden");
+ document.getElementById("writingPanel").classList.add("hidden");
+ document.getElementById("resultPanel").classList.add("hidden");
+ document.getElementById("lesson").classList.remove("hidden");
+ const s=stages[stage], total=stages.length;
+ document.getElementById("stageText").textContent=`Lesson ${stage+1} of ${total}`;
+ document.getElementById("bar").style.width=((stage)/(total-1)*100)+"%";
+ if(s.type==="q"){showQuestion(s);return}
+ if(s.type==="speaking"){document.getElementById("lesson").classList.add("hidden");document.getElementById("speakingPanel").classList.remove("hidden");return}
+ if(s.type==="writing"){document.getElementById("lesson").classList.add("hidden");document.getElementById("writingPanel").classList.remove("hidden");return}
+ if(s.type==="result"){showResult();return}
+ document.getElementById("icon").textContent=s.icon;document.getElementById("title").textContent=s.title;document.getElementById("body").textContent=s.body;document.getElementById("extra").innerHTML=s.extra||"";
+ document.getElementById("mainBtn").textContent=stage===0?"▶ START LESSON":"CONTINUE ▶";
+}
+function showQuestion(s){
+ document.getElementById("lesson").classList.add("hidden");document.getElementById("questionPanel").classList.remove("hidden");
+ document.getElementById("qTitle").textContent="❓ CHECKPOINT";document.getElementById("qText").textContent=s.q;
+ const box=document.getElementById("options");box.innerHTML="";
+ document.getElementById("feedback").innerHTML="";document.getElementById("continueBtn").classList.add("hidden");
+ s.opts.forEach((x,i)=>{let b=document.createElement("button");b.className="option";b.textContent=String.fromCharCode(65+i)+". "+x;b.onclick=()=>answer(i,b,s);box.appendChild(b)});
+}
+function answer(i,button,s){
+ if(document.getElementById("continueBtn").classList.contains("hidden")===false)return;
+ [...document.querySelectorAll(".option")].forEach(x=>x.disabled=true);
+ if(i===s.a){button.classList.add("correct");quizScore+=10;answers.push(true);document.getElementById("feedback").innerHTML=`<div class="feedback ok">✅ CORRECT! ${s.exp}</div>`}
+ else{button.classList.add("wrong");answers.push(false);document.getElementById("feedback").innerHTML=`<div class="feedback no">❌ Not quite. ${s.exp}</div>`}
+ document.getElementById("scoreTop").textContent=`Score: ${quizScore}/100`;document.getElementById("continueBtn").classList.remove("hidden");
+}
+function nextStage(){stage++; if(stage>=stages.length)stage=stages.length-1;save();render();}
+function finishWriting(){localStorage.setItem("opinionWriting",document.getElementById("writing").value);stage++;save();render();}
+function showResult(){
+ document.getElementById("lesson").classList.add("hidden");document.getElementById("resultPanel").classList.remove("hidden");
+ document.getElementById("stageText").textContent="Lesson Complete";document.getElementById("bar").style.width="100%";
+ document.getElementById("quizScore").textContent=quizScore;document.getElementById("overall").textContent=quizScore;
+ let m=quizScore>=90?"🌟 Excellent!":quizScore>=80?"👏 Very Good!":quizScore>=70?"👍 Good Job!":"💪 Keep Practicing!";
+ document.getElementById("resultMsg").textContent=m;
+}
+function retry(){stage=0;quizScore=0;answers=[];localStorage.removeItem("opinionProgress");document.getElementById("scoreTop").textContent="Score: 0/100";render();}
+function save(){localStorage.setItem("opinionProgress",JSON.stringify({stage,quizScore,answers}));}
+function load(){try{let x=JSON.parse(localStorage.getItem("opinionProgress"));if(x){stage=x.stage||0;quizScore=x.quizScore||0;answers=x.answers||[];}}catch(e){}}
+function exportCSV(){
+ const name=prompt("Student name (optional):","Student")||"Student";
+ const rows=[["Student","Module","Quiz Score","Questions Correct","Writing Words","Date"],[name,"Asking for and Giving Opinion",quizScore,answers.filter(Boolean).length,(document.getElementById("writing").value||localStorage.getItem("opinionWriting")||"").trim().split(/\s+/).filter(Boolean).length,new Date().toLocaleString()]];
+ const csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")).join("\n");
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="opinion_lesson_report.csv";a.click();
+}
+function updateWC(){let v=document.getElementById("writing").value.trim();let n=v?v.split(/\s+/).length:0;document.getElementById("wc").textContent=`Word Count: ${n} / 50`;localStorage.setItem("opinionWriting",document.getElementById("writing").value)}
+document.getElementById("writing").addEventListener("input",updateWC);
+
+async function toggleRecording(){
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){alert("Microphone recording is not supported in this browser/context. Please open the LMS in Chrome or Edge and allow microphone access.");return}
+ chunks=[];recorder=new MediaRecorder(await navigator.mediaDevices.getUserMedia({audio:true}));
+ recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+ recorder.onstop=()=>{audioBlob=new Blob(chunks,{type:"audio/webm"});document.getElementById("audio").src=URL.createObjectURL(audioBlob);document.getElementById("audio").classList.remove("hidden");document.getElementById("downloadAudio").classList.remove("hidden");document.getElementById("recStatus").textContent="Recording saved in this session.";};
+ recorder.start();document.getElementById("recordBtn").disabled=true;document.getElementById("stopBtn").disabled=false;document.getElementById("recStatus").textContent="🔴 Recording...";
+}
+function stopRecording(){if(recorder&&recorder.state!=="inactive")recorder.stop();document.getElementById("recordBtn").disabled=false;document.getElementById("stopBtn").disabled=true;}
+function downloadRecording(){if(!audioBlob)return;let a=document.createElement("a");a.href=URL.createObjectURL(audioBlob);a.download="asking_giving_opinion_speaking.webm";a.click();}
+load();render();
+</script>
+</body>
+</html>
